@@ -1,0 +1,75 @@
+---
+# Source: helm-count-app/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fastapi-app-helm-count-app
+  labels:
+    helm.sh/chart: helm-count-app-0.1.0
+    app.kubernetes.io/name: helm-count-app
+    app.kubernetes.io/instance: fastapi-app
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+automountServiceAccountToken: true
+---
+# Source: helm-count-app/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-app-service
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 8000
+    nodePort: 30001
+  selector:
+    app: fastapi-app
+---
+# Source: helm-count-app/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-app
+  labels:
+    app: fastapi-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fastapi-app
+  template:
+    metadata:
+      labels:
+        app: fastapi-app
+    spec:
+      containers:
+      - name: fastapi-app
+        image: "sharmaarnav/fastapi-assesment-app:latest"
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://postgres:password@172.16.129.55:54321/request_counter"
+---
+# Source: helm-count-app/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "fastapi-app-helm-count-app-test-connection"
+  labels:
+    helm.sh/chart: helm-count-app-0.1.0
+    app.kubernetes.io/name: helm-count-app
+    app.kubernetes.io/instance: fastapi-app
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['fastapi-app-helm-count-app:80']
+  restartPolicy: Never
