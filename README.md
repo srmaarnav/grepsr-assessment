@@ -29,7 +29,8 @@ This project is a FastAPI-based application that tracks the number of requests m
 2. Create a virtual environment and activate it:
    ```bash
    python -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+   source venv/bin/activate  
+   On Windows use `venv\Scripts\activate`
    ```
 
 3. Install dependencies:
